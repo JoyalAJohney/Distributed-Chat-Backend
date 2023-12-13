@@ -12,5 +12,6 @@ type User struct {
 type Message struct {
 	Sender string `json:"sender"`
 	Room string `json:"room"`
+	Type string `json:"type"`
 	Content string `json:"content"`
 }
