@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/contrib/websocket"
+	"github.com/gofiber/fiber/v2"
 
-	"realtime-chat/src/chat"
 	"realtime-chat/src/cache"
+	"realtime-chat/src/chat"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 	cache.InitRedis()
 
 	app.Use("/ws", upgradeToWebSocket)
-	app.Get("/ws/:id", websocket.New(chat.WebSocketHandler))
+	app.Get("/ws/chat", websocket.New(chat.WebSocketHandler))
 
 	log.Fatal(app.Listen(":3000"))
 }

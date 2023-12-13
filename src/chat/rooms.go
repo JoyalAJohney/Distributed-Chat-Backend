@@ -1,12 +1,14 @@
 package chat
 
 import (
+	"log"
 	"sync"
 
 	"github.com/gofiber/contrib/websocket"
 
 	"realtime-chat/src/cache"
 	"realtime-chat/src/models"
+	"realtime-chat/src/utils"
 )
 
 var (
@@ -33,6 +35,9 @@ func JoinRoom(room string, user *models.User) {
 		}, RoomCleanup)
 	}
 	subscriptionsMutex.Unlock()
+
+	log.Printf("User %s joined room %s\n", user.ID, room)
+	log.Printf("Room %s has %d members\n", room, len(roomsAndMembersMap[room]))
 }
 
 func BroadcastToRoom(room string, message models.Message) {
@@ -44,6 +49,25 @@ func BroadcastToRoom(room string, message models.Message) {
 			delete(roomsAndMembersMap[room], conn)
 		}
 	}
+}
+
+func SendMessageToRoom(message models.Message, user *models.User) {
+	if !isUserInRoom(message.Room, user) {
+		utils.SendErrorMessage(user.Connection, "You are not a member of this room")
+		return
+	}
+	cache.PublishMessage(message.Room, &message)
+}
+
+func isUserInRoom(room string, user *models.User) bool {
+	roomMutex.Lock()
+	defer roomMutex.Unlock()
+
+	if roomMembers, exists := roomsAndMembersMap[room]; exists {
+		_, userExists := roomMembers[user.Connection]
+		return userExists
+	}
+	return false
 }
 
 func RoomCleanup(room string) {

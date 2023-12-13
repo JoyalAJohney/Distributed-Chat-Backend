@@ -4,17 +4,18 @@ import (
 	"log"
 
 	"github.com/gofiber/contrib/websocket"
-	gonanoid "github.com/matoous/go-nanoid/v2"
 
 	"realtime-chat/src/models"
+	"realtime-chat/src/utils"
 )
 
 func WebSocketHandler(conn *websocket.Conn) {
-	userID := generateUserID()
+	userID := utils.GenerateUserID()
 	user := &models.User{
 		ID:         userID,
 		Connection: conn,
 	}
+	log.Printf("User %s connected\n", userID)
 
 	for {
 		var message models.Message
@@ -22,6 +23,7 @@ func WebSocketHandler(conn *websocket.Conn) {
 			break
 		}
 
+		log.Printf("Received message: %v\n", message)
 		message.Sender = userID
 		switch MessageType(message.Type) {
 		case JoinRoomType:
@@ -29,7 +31,7 @@ func WebSocketHandler(conn *websocket.Conn) {
 		case LeaveRoomType:
 			LeaveRoom(message.Room, user)
 		case ChatMessageType:
-			BroadcastToRoom(message.Room, message)
+			SendMessageToRoom(message, user)
 		default:
 			log.Println("Unknown message type")
 		}
@@ -37,9 +39,4 @@ func WebSocketHandler(conn *websocket.Conn) {
 
 	// User disconnected
 	LeaveAllRooms(user)
-}
-
-func generateUserID() string {
-	id, _ := gonanoid.New()
-	return id
 }
