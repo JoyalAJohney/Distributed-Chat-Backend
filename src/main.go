@@ -13,6 +13,7 @@ func main() {
 	app := fiber.New()
 	cache.InitRedis()
 
+	// Middleware to upgrade to websocket
 	app.Use("/ws", upgradeToWebSocket)
 	app.Get("/ws/:id", websocket.New(handleWebSocket))
 

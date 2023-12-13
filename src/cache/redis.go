@@ -1,24 +1,37 @@
 package cache
 
 import (
+	"fmt"
 	"context"
 
 	"github.com/go-redis/redis/v8"
+
+	"realtime-chat/src/config"
 )
 
-var RedisConnection *redis.Client
+type RedisConfig struct {
+	Host string
+	Port string
+}
+var redisConfig RedisConfig
+var RedisClient *redis.Client
+
+
+func init() {
+	redisConfig = RedisConfig{
+		Host: config.Config.RedisHost,
+		Port: config.Config.RedisPort,
+	}
+}
 
 func InitRedis() {
-	RedisConnection = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
-		Password: "",
-		DB: 0,
+	RedisClient = redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%s", redisConfig.Host, redisConfig.Port),
 	})
 
 	// Test connection
 	ctx := context.Background()
-	_, err := RedisConnection.Ping(ctx).Result()
-	if err != nil {
+	if err := RedisClient.Ping(ctx).Err(); err != nil {
 		panic(err)
 	}
 }
