@@ -1,23 +1,34 @@
 package cache
 
 import (
-	"log"
 	"context"
 	"encoding/json"
+	"log"
 
 	"realtime-chat/src/models"
 )
 
-func SubscribeToRoom(room string, handleMessage	func(msg models.Message)) {
+func SubscribeToRoom(room string, handleMessage func(msg models.Message), cleanupCallback func(room string)) {
+	// Establish a TCP connection that listens for messages
 	pubsub := RedisClient.Subscribe(context.Background(), room)
+	defer pubsub.Close()
+
 	go func() {
 		channel := pubsub.Channel()
 		for message := range channel {
 			var chatMessage models.Message
-			json.Unmarshal([]byte(message.Payload), &chatMessage)
+			err := json.Unmarshal([]byte(message.Payload), &chatMessage)
+			if err != nil {
+				log.Printf("Error decoding message from channel: %v\n", err)
+				continue
+			}
 			handleMessage(chatMessage)
 		}
+
+		// cleanup after leaving the room
+		cleanupCallback(room)
 	}()
+
 }
 
 func PublishMessage(room string, message *models.Message) {

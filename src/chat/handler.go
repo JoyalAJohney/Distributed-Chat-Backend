@@ -3,8 +3,8 @@ package chat
 import (
 	"log"
 
-	"github.com/matoous/go-nanoid/v2"
 	"github.com/gofiber/contrib/websocket"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 
 	"realtime-chat/src/models"
 )
@@ -12,7 +12,7 @@ import (
 func WebSocketHandler(conn *websocket.Conn) {
 	userID := generateUserID()
 	user := &models.User{
-		ID: userID,
+		ID:         userID,
 		Connection: conn,
 	}
 
@@ -24,14 +24,14 @@ func WebSocketHandler(conn *websocket.Conn) {
 
 		message.Sender = userID
 		switch MessageType(message.Type) {
-			case JoinRoom:
-				JoinRoom(message.Room, user)
-			case LeaveRoom:
-				LeaveRoom(message.Room, user)
-			case ChatMessage:
-				BroadcastToRoom(message.Room, message)
-			default:
-				log.Println("Unknown message type")
+		case JoinRoomType:
+			JoinRoom(message.Room, user)
+		case LeaveRoomType:
+			LeaveRoom(message.Room, user)
+		case ChatMessageType:
+			BroadcastToRoom(message.Room, message)
+		default:
+			log.Println("Unknown message type")
 		}
 	}
 
