@@ -17,7 +17,7 @@ func main() {
 	app.Use("/ws", upgradeToWebSocket)
 	app.Get("/ws/chat", websocket.New(chat.WebSocketHandler))
 
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(app.Listen(":8080"))
 }
 
 func upgradeToWebSocket(context *fiber.Ctx) error {

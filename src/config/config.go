@@ -1,10 +1,8 @@
 package config
 
 import (
-	"os"
 	"log"
-
-	"github.com/joho/godotenv"
+	"os"
 )
 
 type AppConfig struct {
@@ -15,14 +13,14 @@ type AppConfig struct {
 var Config AppConfig
 
 func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	// Initialize Configuration
 	Config = AppConfig{
-		RedisHost: getEnv("REDIS_HOST", "localhost"),
-		RedisPort: getEnv("REDIS_PORT", "6379"),
+		RedisHost: os.Getenv("REDIS_HOST"),
+		RedisPort: os.Getenv("REDIS_PORT"),
+	}
+
+	if Config.RedisHost == "" || Config.RedisPort == "" {
+		log.Fatal("Environment variables not set")
 	}
 }
 
