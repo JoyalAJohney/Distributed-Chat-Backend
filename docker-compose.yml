@@ -1,11 +1,43 @@
 version: '3'
 services:
-  app:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.layer7.conf:/etc/nginx/nginx.conf:ro  
+    depends_on:
+      - app1
+      - app2
+      - app3
+  app1:
     build: .
     ports:
-      - "8080:8080"
+      - "8081:8080"
     env_file:
       - .env
+    environment:
+      - SERVER_NAME=asia
+    depends_on:
+      - redis
+  app2:
+    build: .
+    ports:
+      - "8082:8080"
+    env_file:
+      - .env
+    environment:
+      - SERVER_NAME=middle-east
+    depends_on:
+      - redis
+  app3:
+    build: .
+    ports:
+      - "8083:8080"
+    env_file:
+      - .env
+    environment:
+      - SERVER_NAME=europe
     depends_on:
       - redis
   redis:
