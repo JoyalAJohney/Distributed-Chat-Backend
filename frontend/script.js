@@ -1,4 +1,4 @@
-const serverUrl = 'ws://babylonchat.in/ws/chat';  // Update with your WebSocket server URL
+const serverUrl = 'wss://babylonchat.in/ws/chat';  // Update with your WebSocket server URL
 let socket;
 let roomName = '';
 
