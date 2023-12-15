@@ -13,18 +13,16 @@ jobs:
       # SSH into EC2 instance using the private key
       - name: Set up SSH
         run: |
-          if [ ! -d ~/.ssh ]; then
-            mkdir -p ~/.ssh/
-          fi
+          mkdir -p ~/.ssh/
           echo "$AWS_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ec2-13-250-112-72.ap-southeast-1.compute.amazonaws.com >> ~/.ssh/known_hosts
+          ssh-keyscan -H ec2-3-0-37-181.ap-southeast-1.compute.amazonaws.com >> ~/.ssh/known_hosts
         env:
           AWS_SSH_PRIVATE_KEY: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
 
       - name: Deploy to EC2
         run: |
-          ssh ubuntu@ec2-13-250-112-72.ap-southeast-1.compute.amazonaws.com "cd /home/ubuntu/RealTime-Chat-Go && git pull && sudo docker-compose up --build -d"
+          ssh ubuntu@ec2-3-0-37-181.ap-southeast-1.compute.amazonaws.com "cd /home/ubuntu/RealTime-Chat-Go && git pull && sudo docker-compose up --build -d"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
