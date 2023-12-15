@@ -6,6 +6,7 @@ services:
       - "8080:80"
     volumes:
       - ./nginx.layer7.conf:/etc/nginx/nginx.conf:ro  
+      - ./frontend:/usr/share/nginx/html:ro
     depends_on:
       - app1
       - app2
