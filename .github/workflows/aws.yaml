@@ -18,7 +18,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ec2-13-250-112-72.ap-southeast-1.compute.amazonaws.com >> ~/.ssh/known_hosts
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+          AWS_SSH_PRIVATE_KEY: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
 
       - name: Deploy to EC2
         run: |
