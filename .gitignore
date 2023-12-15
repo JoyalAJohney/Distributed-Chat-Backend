@@ -1,2 +1,2 @@
 .env
-gochat-app-aws-key.pem
+aws-ec2-key.pem
