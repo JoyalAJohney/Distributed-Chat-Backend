@@ -1,4 +1,4 @@
-const serverUrl = 'ws://13.250.112.72:8080/ws/chat';  // Update with your WebSocket server URL
+const serverUrl = 'ws://3.0.37.181:8080/ws/chat';  // Update with your WebSocket server URL
 let socket;
 let roomName = '';
 
