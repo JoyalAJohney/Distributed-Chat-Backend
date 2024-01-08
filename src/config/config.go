@@ -6,8 +6,13 @@ import (
 )
 
 type AppConfig struct {
-	RedisHost string
-	RedisPort string
+	RedisHost        string
+	RedisPort        string
+	PostgresHost     string
+	PostgresPort     string
+	PostgresUser     string
+	PostgresPassword string
+	PostgresDatabase string
 }
 
 var Config AppConfig
@@ -15,11 +20,16 @@ var Config AppConfig
 func init() {
 	// Initialize Configuration
 	Config = AppConfig{
-		RedisHost: os.Getenv("REDIS_HOST"),
-		RedisPort: os.Getenv("REDIS_PORT"),
+		RedisHost:        os.Getenv("REDIS_HOST"),
+		RedisPort:        os.Getenv("REDIS_PORT"),
+		PostgresHost:     os.Getenv("POSTGRES_HOST"),
+		PostgresPort:     os.Getenv("POSTGRES_PORT"),
+		PostgresUser:     os.Getenv("POSTGRES_USER"),
+		PostgresPassword: os.Getenv("POSTGRES_PASSWORD"),
+		PostgresDatabase: os.Getenv("POSTGRES_DATABASE"),
 	}
 
-	if Config.RedisHost == "" || Config.RedisPort == "" {
+	if Config.RedisHost == "" || Config.PostgresHost == "" {
 		log.Fatal("Environment variables not set")
 	}
 }

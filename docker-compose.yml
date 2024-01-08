@@ -1,4 +1,4 @@
-version: '3'
+version: '2.1'
 services:
   nginx:
     image: nginx:latest
@@ -12,6 +12,29 @@ services:
       - app1
       - app2
       - app3
+    networks:
+      - chat-network
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - chat-network
+
   app1:
     build: .
     ports:
@@ -19,9 +42,15 @@ services:
     env_file:
       - .env
     environment:
-      - SERVER_NAME=asia
+      - SERVER_NAME=ASIA
+    networks:
+      - chat-network
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
   app2:
     build: .
     ports:
@@ -29,9 +58,15 @@ services:
     env_file:
       - .env
     environment:
-      - SERVER_NAME=middle-east
+      - SERVER_NAME=MIDDLE-EAST
+    networks:
+      - chat-network
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
   app3:
     build: .
     ports:
@@ -39,10 +74,25 @@ services:
     env_file:
       - .env
     environment:
-      - SERVER_NAME=europe
+      - SERVER_NAME=EUROPE
+    networks:
+      - chat-network
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
   redis:
     image: redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
+    networks:
+      - chat-network
+
+volumes:
+  postgres_data:
+
+networks:
+  chat-network:
+    driver: bridge

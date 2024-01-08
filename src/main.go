@@ -8,11 +8,13 @@ import (
 
 	"realtime-chat/src/cache"
 	"realtime-chat/src/chat"
+	"realtime-chat/src/database"
 )
 
 func main() {
 	app := fiber.New()
 	cache.InitRedis()
+	database.InitPostgres()
 
 	app.Use("/ws", upgradeToWebSocket)
 	app.Get("/ws/chat", websocket.New(chat.WebSocketHandler))

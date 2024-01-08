@@ -18,7 +18,7 @@ func SubscribeToRoom(room string, callback models.MessageHandlerCallbackType) {
 	roomsMutex.Lock()
 	defer roomsMutex.Unlock()
 
-	// Subscribe to new room only
+	// Subscribe to room if not already subscribed
 	if !subscribedRooms[room] {
 		ctx := context.Background()
 		PubSubConnection.Subscribe(ctx, room)
