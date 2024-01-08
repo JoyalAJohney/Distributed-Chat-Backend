@@ -1,2 +1,3 @@
 .env
-aws-ec2-key.pem
+aws-ec2-key*
+aws-iam-user*
