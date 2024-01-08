@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
 	"github.com/go-redis/redis/v8"
 
@@ -13,9 +13,10 @@ type RedisConfig struct {
 	Host string
 	Port string
 }
+
 var redisConfig RedisConfig
 var RedisClient *redis.Client
-
+var PubSubConnection *redis.PubSub
 
 func init() {
 	redisConfig = RedisConfig{
@@ -29,10 +30,12 @@ func InitRedis() {
 		Addr: fmt.Sprintf("%s:%s", redisConfig.Host, redisConfig.Port),
 	})
 
-	// Test connection
+	// Initialize PubSub connection
 	ctx := context.Background()
+	PubSubConnection = RedisClient.Subscribe(ctx)
+
+	// Ping Redis to check if connection is established
 	if err := RedisClient.Ping(ctx).Err(); err != nil {
 		panic(err)
 	}
 }
-

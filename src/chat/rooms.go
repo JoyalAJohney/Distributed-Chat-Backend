@@ -1,97 +1,106 @@
 package chat
 
 import (
+	"context"
 	"log"
 	"sync"
-
-	"github.com/gofiber/contrib/websocket"
 
 	"realtime-chat/src/cache"
 	"realtime-chat/src/models"
 	"realtime-chat/src/utils"
 )
 
-var (
-	roomMutex          = &sync.Mutex{}
-	roomsAndMembersMap = make(map[string]map[*websocket.Conn]bool)
-
-	subscriptionsMutex  = &sync.Mutex{}
-	activeSubscriptions = make(map[string]bool)
-)
+var roomMutex = &sync.Mutex{}
+var subscribedRooms = make(map[string]bool)
 
 func JoinRoom(room string, user *models.User) {
-	roomMutex.Lock()
-	if roomsAndMembersMap[room] == nil {
-		roomsAndMembersMap[room] = make(map[*websocket.Conn]bool)
+	key := "room:" + room
+	if err := addUserToRoomInRedis(key, user); err != nil {
+		log.Println("Failed to add user to room:", err)
+		utils.SendErrorMessage(user.Connection, "Unable to join room")
+		return
 	}
-	roomsAndMembersMap[room][user.Connection] = true
-	roomMutex.Unlock()
 
-	subscriptionsMutex.Lock()
-	if !activeSubscriptions[room] {
-		activeSubscriptions[room] = true
-		cache.SubscribeToRoom(room, func(msg models.Message) {
-			BroadcastToRoom(room, msg)
-		}, RoomCleanup)
-	}
-	subscriptionsMutex.Unlock()
+	cache.SubscribeToRoom(room, func(room string, message *models.Message) {
+		BroadcastToRoom(room, *message)
+	})
 
 	log.Printf("User %s joined room %s\n", user.ID, room)
-	log.Printf("Room %s has %d members\n", room, len(roomsAndMembersMap[room]))
 }
 
 func BroadcastToRoom(room string, message models.Message) {
-	roomMutex.Lock()
-	defer roomMutex.Unlock()
-	for conn := range roomsAndMembersMap[room] {
-		if err := conn.WriteJSON(message); err != nil {
-			conn.Close()
-			delete(roomsAndMembersMap[room], conn)
+	key := "room:" + room
+	for _, userID := range getAllMembersInRoom(key) {
+		// Get the websocket connection for the user from the local map
+		if conn, exists := GetConnection(userID); exists {
+			// Send the message to the user
+			if err := conn.WriteJSON(message); err != nil {
+				log.Printf("Error sending message to user %s: %v\n", userID, err)
+				conn.Close()
+				RemoveConnection(userID)
+			}
 		}
 	}
 }
 
 func SendMessageToRoom(message models.Message, user *models.User) {
-	if !isUserInRoom(message.Room, user) {
+	key := "room:" + message.Room
+	if !isUserInRoom(key, user) {
 		utils.SendErrorMessage(user.Connection, "You are not a member of this room")
 		return
 	}
 	cache.PublishMessage(message.Room, &message)
 }
 
-func isUserInRoom(room string, user *models.User) bool {
-	roomMutex.Lock()
-	defer roomMutex.Unlock()
-
-	if roomMembers, exists := roomsAndMembersMap[room]; exists {
-		_, userExists := roomMembers[user.Connection]
-		return userExists
-	}
-	return false
-}
-
-func RoomCleanup(room string) {
-	subscriptionsMutex.Lock()
-	delete(activeSubscriptions, room)
-	subscriptionsMutex.Unlock()
-
-	roomMutex.Lock()
-	if len(roomsAndMembersMap[room]) == 0 {
-		delete(roomsAndMembersMap, room)
-	}
-	roomMutex.Unlock()
-}
-
 func LeaveRoom(room string, user *models.User) {
-	roomMutex.Lock()
-	delete(roomsAndMembersMap[room], user.Connection)
-	roomMutex.Unlock()
+	key := "room:" + room
+	if err := removeUserFromRoomInRedis(key, user); err != nil {
+		log.Println("Failed to remove user from room:", err)
+		utils.SendErrorMessage(user.Connection, "Unable to leave room")
+		return
+	}
+
+	cache.CheckAndUnsubscribeFromRoom(room)
 }
 
 func LeaveAllRooms(user *models.User) {
-	roomMutex.Lock()
-	for room := range roomsAndMembersMap {
-		delete(roomsAndMembersMap[room], user.Connection)
+	for _, room := range cache.GetAllRooms() {
+		isMember := isUserInRoom(room, user)
+		if isMember {
+			LeaveRoom(room, user)
+		}
 	}
-	roomMutex.Unlock()
+}
+
+// Helper methods
+func addUserToRoomInRedis(room string, user *models.User) error {
+	ctx := context.Background()
+	_, err := cache.RedisClient.SAdd(ctx, room, user.ID).Result()
+	return err
+}
+
+func removeUserFromRoomInRedis(room string, user *models.User) error {
+	ctx := context.Background()
+	_, err := cache.RedisClient.SRem(ctx, room, user.ID).Result()
+	return err
+}
+
+func isUserInRoom(room string, user *models.User) bool {
+	ctx := context.Background()
+	isMember, err := cache.RedisClient.SIsMember(ctx, room, user.ID).Result()
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return isMember
+}
+
+func getAllMembersInRoom(room string) []string {
+	ctx := context.Background()
+	members, err := cache.RedisClient.SMembers(ctx, room).Result()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return members
 }

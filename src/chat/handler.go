@@ -22,6 +22,9 @@ func WebSocketHandler(conn *websocket.Conn) {
 	}
 	log.Printf("User %s connected to server: %s\n", userID, server)
 
+	// Add connection for local tracking
+	AddConnection(userID, conn)
+
 	for {
 		var message models.Message
 		if err := conn.ReadJSON(&message); err != nil {
@@ -44,4 +47,6 @@ func WebSocketHandler(conn *websocket.Conn) {
 
 	// User disconnected
 	LeaveAllRooms(user)
+	// Remove connection from local tracking
+	RemoveConnection(userID)
 }

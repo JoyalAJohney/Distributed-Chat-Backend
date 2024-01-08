@@ -9,6 +9,8 @@ type User struct {
 	Connection *websocket.Conn
 }
 
+type MessageHandlerCallbackType func(room string, message *Message)
+
 type Message struct {
 	Sender  string `json:"sender"`
 	Room    string `json:"room"`
