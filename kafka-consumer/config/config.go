@@ -6,14 +6,11 @@ import (
 )
 
 type AppConfig struct {
-	RedisHost        string
-	RedisPort        string
 	PostgresHost     string
 	PostgresPort     string
 	PostgresUser     string
 	PostgresPassword string
 	PostgresDatabase string
-	JwtSecret        string
 	KafkaHost        string
 	KafkaPort        string
 	KafkaTopic       string
@@ -25,9 +22,6 @@ var Config AppConfig
 func init() {
 	// Initialize Configuration
 	Config = AppConfig{
-		JwtSecret:        os.Getenv("JWT_SECRET"),
-		RedisHost:        os.Getenv("REDIS_HOST"),
-		RedisPort:        os.Getenv("REDIS_PORT"),
 		KafkaHost:        os.Getenv("KAFKA_HOST"),
 		KafkaPort:        os.Getenv("KAFKA_PORT"),
 		KafkaTopic:       os.Getenv("KAFKA_TOPIC"),
@@ -39,7 +33,7 @@ func init() {
 		PostgresDatabase: os.Getenv("POSTGRES_DATABASE"),
 	}
 
-	if Config.RedisHost == "" || Config.PostgresHost == "" {
+	if Config.KafkaHost == "" || Config.PostgresHost == "" {
 		log.Fatal("Environment variables not set")
 	}
 }

@@ -4,10 +4,9 @@ import (
 	"context"
 	"log"
 	"sync"
-	"time"
 
 	"realtime-chat/src/cache"
-	"realtime-chat/src/database"
+	"realtime-chat/src/kafka"
 	"realtime-chat/src/models"
 	"realtime-chat/src/utils"
 )
@@ -52,7 +51,7 @@ func SendMessageToRoom(message models.Message, user *models.User) {
 		return
 	}
 	cache.PublishMessage(message.Room, &message)
-	saveMessageToDatabase(message)
+	kafka.PublishMessage(message)
 }
 
 func LeaveRoom(room string, user *models.User) {
@@ -76,20 +75,6 @@ func LeaveAllRooms(user *models.User) {
 }
 
 // Helper methods
-func saveMessageToDatabase(message models.Message) {
-	var currentTime = time.Now()
-	dbMessage := database.DBMessage{
-		UserID:    message.Sender,
-		RoomID:    message.Room,
-		Message:   message.Content,
-		Timestamp: &currentTime,
-	}
-
-	if err := database.DB.Create(&dbMessage).Error; err != nil {
-		log.Println("Error saving message to database:", err)
-		return
-	}
-}
 
 func addUserToRoomInRedis(room string, user *models.User) error {
 	ctx := context.Background()
