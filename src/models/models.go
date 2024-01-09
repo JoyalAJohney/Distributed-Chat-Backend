@@ -6,16 +6,18 @@ import (
 
 type User struct {
 	ID         string
+	Name       string
 	Connection *websocket.Conn
 }
 
 type MessageHandlerCallbackType func(room string, message *Message)
 
 type Message struct {
-	Sender  string `json:"sender"`
-	Room    string `json:"room"`
-	Type    string `json:"type"`
-	Content string `json:"content"`
+	Sender     string `json:"sender"`
+	SenderName string `json:"senderName"`
+	Room       string `json:"room"`
+	Type       string `json:"type"`
+	Content    string `json:"content"`
 }
 
 type ErrorMessage struct {

@@ -13,6 +13,7 @@ type AppConfig struct {
 	PostgresUser     string
 	PostgresPassword string
 	PostgresDatabase string
+	JwtSecret        string
 }
 
 var Config AppConfig
@@ -20,6 +21,7 @@ var Config AppConfig
 func init() {
 	// Initialize Configuration
 	Config = AppConfig{
+		JwtSecret:        os.Getenv("JWT_SECRET"),
 		RedisHost:        os.Getenv("REDIS_HOST"),
 		RedisPort:        os.Getenv("REDIS_PORT"),
 		PostgresHost:     os.Getenv("POSTGRES_HOST"),

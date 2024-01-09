@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"realtime-chat/src/cache"
+	"realtime-chat/src/database"
 	"realtime-chat/src/models"
 	"realtime-chat/src/utils"
 )
@@ -50,6 +51,7 @@ func SendMessageToRoom(message models.Message, user *models.User) {
 		return
 	}
 	cache.PublishMessage(message.Room, &message)
+	saveMessageToDatabase(message)
 }
 
 func LeaveRoom(room string, user *models.User) {
@@ -73,6 +75,19 @@ func LeaveAllRooms(user *models.User) {
 }
 
 // Helper methods
+func saveMessageToDatabase(message models.Message) {
+	dbMessage := database.DBMessage{
+		UserID:  message.Sender,
+		RoomID:  message.Room,
+		Message: message.Content,
+	}
+
+	if err := database.DB.Create(&dbMessage).Error; err != nil {
+		log.Println("Error saving message to database:", err)
+		return
+	}
+}
+
 func addUserToRoomInRedis(room string, user *models.User) error {
 	ctx := context.Background()
 	_, err := cache.RedisClient.SAdd(ctx, room, user.ID).Result()
