@@ -76,7 +76,7 @@ func PublishMessage(room string, message *models.Message) {
 	}
 	// Any connection from the pool can be used to publish messages
 	RedisClient.Publish(ctx, room, msg)
-	log.Printf("Published message to channel: %s\n", room)
+	log.Printf("Published message: %s to channel: %s\n", msg, room)
 }
 
 func GetAllRooms() []string {

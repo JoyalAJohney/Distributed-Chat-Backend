@@ -19,7 +19,7 @@ func WebSocketHandler(conn *websocket.Conn) {
 		Connection: conn,
 	}
 	server := os.Getenv("SERVER_NAME")
-	log.Printf("User %s connected to server: %s\n", userID, server)
+	log.Printf("User %s connected to server: %s\n", userName, server)
 
 	// Add connection for local tracking
 	AddConnection(userID, conn)
@@ -33,6 +33,7 @@ func WebSocketHandler(conn *websocket.Conn) {
 
 		log.Printf("Received message: %v\n on server: %s", message, server)
 		message.Sender = userID
+		message.Server = server
 		message.SenderName = userName
 		switch MessageType(message.Type) {
 		case JoinRoomType:

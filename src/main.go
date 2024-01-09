@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 
 	"realtime-chat/src/auth"
 	"realtime-chat/src/cache"
@@ -17,8 +18,15 @@ func main() {
 	cache.InitRedis()
 	database.InitPostgres()
 
-	app.Post("/auth/signup", auth.SignUp)
-	app.Post("/auth/login", auth.Login)
+	// handle CORS
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "POST, OPTIONS",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
+
+	app.Post("/api/auth/signup", auth.SignUp)
+	app.Post("/api/auth/login", auth.Login)
 
 	// Secure websocket connection
 	app.Use("/ws", upgradeToWebSocket)

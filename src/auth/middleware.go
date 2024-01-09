@@ -34,15 +34,15 @@ func ValidateJWTToken(authHeader string) error {
 	return err
 }
 
-func ParseJWTToken(authHeader string) (userID uint, userName string) {
+func ParseJWTToken(authHeader string) (userID string, userName string) {
 	tokenString := strings.Split(authHeader, " ")[1]
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.Config.JwtSecret), nil
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID = uint(claims["userID"].(float64))
-		userName = claims["userName"].(string)
+		userID = claims["userID"].(string)
+		userName = claims["username"].(string)
 	}
 
 	return userID, userName

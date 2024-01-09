@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"sync"
+	"time"
 
 	"realtime-chat/src/cache"
 	"realtime-chat/src/database"
@@ -69,17 +70,19 @@ func LeaveAllRooms(user *models.User) {
 	for _, room := range cache.GetAllRooms() {
 		isMember := isUserInRoom(room, user)
 		if isMember {
-			LeaveRoom(room, user)
+			removeUserFromRoomInRedis(room, user)
 		}
 	}
 }
 
 // Helper methods
 func saveMessageToDatabase(message models.Message) {
+	var currentTime = time.Now()
 	dbMessage := database.DBMessage{
-		UserID:  message.Sender,
-		RoomID:  message.Room,
-		Message: message.Content,
+		UserID:    message.Sender,
+		RoomID:    message.Room,
+		Message:   message.Content,
+		Timestamp: &currentTime,
 	}
 
 	if err := database.DB.Create(&dbMessage).Error; err != nil {

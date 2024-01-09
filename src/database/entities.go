@@ -12,15 +12,10 @@ type DBUser struct {
 	Password string `gorm:"type:varchar(100);not null"`
 }
 
-type DBRoom struct {
-	gorm.Model
-	Name string `gorm:"type:varchar(100);not null;uniqueIndex"`
-}
-
 type DBMessage struct {
 	gorm.Model
-	UserID    string `gorm:"type:uuid;not null"`
-	RoomID    string `gorm:"type:uuid;not null"`
+	UserID    string `gorm:"type:varchar(100);not null"`
+	RoomID    string `gorm:"type:varchar(100);not null"`
 	Message   string `gorm:"type:varchar(100);not null"`
 	Timestamp *time.Time
 }

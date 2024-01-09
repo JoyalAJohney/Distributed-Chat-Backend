@@ -10,6 +10,11 @@ type User struct {
 	Connection *websocket.Conn
 }
 
+type AuthRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type MessageHandlerCallbackType func(room string, message *Message)
 
 type Message struct {
@@ -18,6 +23,7 @@ type Message struct {
 	Room       string `json:"room"`
 	Type       string `json:"type"`
 	Content    string `json:"content"`
+	Server     string `json:"server"`
 }
 
 type ErrorMessage struct {

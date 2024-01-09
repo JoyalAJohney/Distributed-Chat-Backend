@@ -41,5 +41,5 @@ func InitPostgres() {
 
 	// Migrate the schema
 	DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
-	DB.AutoMigrate(&DBUser{}, &DBRoom{}, &DBMessage{})
+	DB.AutoMigrate(&DBUser{}, &DBMessage{})
 }
